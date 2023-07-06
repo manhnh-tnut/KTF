@@ -1,0 +1,82 @@
+﻿@page "/Scale-Report"
+@using KTF.Shared.Models
+@using DevExtreme.AspNet.Mvc
+@model KTF.Features.Scale.Pages.ScaleReportModel
+
+<h2>Báo cáo</h2>
+
+@(Html.DevExtreme().DataGrid<ScaleReport>()
+    .ShowBorders(true)
+    .DataSource(d => d.Mvc()
+            .Controller("ScaleReport")
+            .LoadAction("Get")
+            .InsertAction("Post")
+            .UpdateAction("Put")
+            .DeleteAction("Delete")
+            .Key("Id"))
+    .RemoteOperations(o=>{
+        o.Filtering(true);
+        o.Grouping(true);
+        o.Paging(true);
+        o.Sorting(true);
+        o.GroupPaging(true);
+    })
+    .Editing(e => e.Mode(GridEditMode.Popup)
+        .AllowUpdating(true)
+        .AllowAdding(true)
+        .AllowDeleting(true)
+        .Popup(p => p
+            .Title($"Scale Report")
+            .ShowTitle(true)
+            .Width(500)
+            .Height(525)
+        )
+        .Form(f => f.Items(items => {
+            items.AddSimpleFor(m => m.Quantity).ColSpan(2);
+            items.AddSimpleFor(m => m.Weight).ColSpan(2);
+        }))
+    )
+    .Columns(columns => {
+        columns.Add()
+            .Caption("Ngày/Giờ")
+            .Columns(a =>
+                    {
+                        a.AddFor(m => m.Created)
+                            .Name("Date")
+                            .Caption("Ngày")
+                            .Format(Format.ShortDate)
+                            .SortOrder(SortOrder.Desc);
+
+                        a.AddFor(m => m.Created)
+                            .Name("Time")
+                            .Caption("Giờ bắt đầu")
+                            .Format(Format.ShortTime)
+                            .SortOrder(SortOrder.Asc);
+                    });
+        columns.AddFor(m => m.Line);
+        columns.AddFor(m => m.Code);
+        columns.AddFor(m => m.Model);
+        columns.AddFor(m => m.Total).Caption("Tổng sản lượng(thùng)");
+        columns.AddFor(m => m.Quantity).Caption("Tổng sản lượng(pcs)");
+    })
+    .SearchPanel(searchPanel => searchPanel
+        .Visible(true)
+        .Width(240)
+        .Placeholder("Search...")
+        .HighlightSearchText(true)
+    )
+    .AllowColumnResizing(true)
+    .ColumnResizingMode(ColumnResizingMode.NextColumn)
+    .Export(e => e.Enabled(true))
+    .ShowBorders(true)
+    .OnExporting("exporting")
+    .Paging(p => p.PageSize(10))
+    .FilterRow(f => f.Visible(false))
+    .HeaderFilter(f => f.Visible(true))
+    .GroupPanel(p => p.Visible(false))
+    .Grouping(g => g.AutoExpandAll(false))
+)
+
+@section Scripts{
+    <script src="~/Statics/js/pages/scale-report.js" asp-append-version="true"></script>
+}

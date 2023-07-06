@@ -1,0 +1,8 @@
+﻿dotnet ef migrations add InitialCreate -c ApplicationDbContext -p KTF.Shared -o Data/Migrations --startup-project KTF.WebApp
+$domain= "localhost.dev.local" 
+$password= "manhnh" | ConvertTo-SecureString -AsPlainText -Force 
+New-SelfSignedCertificate -NotBefore (Get-Date) -NotAfter (Get-Date).AddYears(1) -Subject $domain -KeyAlgorithm "RSA" -KeyLength 2048 -HashAlgorithm "SHA256" -CertStoreLocation "Cert:\CurrentUser\My" -KeyUsage KeyEncipherment -FriendlyName $domain -TextExtension @("2.5.29.19={critical}{text}","2.5.29.37={critical}{text}1.3.6.1.5.5.7.3.1","2.5.29.17={critical}{text}DNS=$domain")
+
+$certificate = Get-ChildItem -Path Cert:\CurrentUser\My\ | Where-Object {$_.Subject -match $domain} 
+Export-PfxCertificate -Cert $certificate -FilePath $env:USERPROFILE\Documents\$domain.pfx -Password $password
+https://tedu.com.vn/trien-khai-he-thong/su-dung-trusted-certificate-cho-website-voi-may-chu-iis-309.html

@@ -1,0 +1,29 @@
+﻿@page "/monitor"
+@using KTF.Shared.Models
+@model KTF.WebApp.Pages.MonitorModel
+
+<h2>Monitor</h2>
+@(Html.DevExtreme().DataGrid<Item>()
+    .ID("gridContainer")
+    .Visible(false)
+    .ShowBorders(true)
+    .RepaintChangesOnly(true)
+    .HighlightChanges(true)
+    .AllowColumnResizing(true)
+    .ColumnResizingMode(ColumnResizingMode.NextColumn)
+    .Columns(columns => {
+        columns.Add().DataField("Name");
+        columns.Add().DataField("Type");
+        columns.Add().DataField("Pin");
+        columns.Add().DataField("Value")
+            .CellTemplate(@<text>
+        <span class="<%- data.Value ? 'text-success' : 'text-danger' %>">
+            <%- data.Value ? 1 : 0 %>
+        </span>
+    </text>);
+    })
+)
+@section Scripts{
+<script src="~/js/signalr/dist/browser/signalr.js"></script>
+<script src="~/js/pages/monitor.js" asp-append-version="true"></script>
+}

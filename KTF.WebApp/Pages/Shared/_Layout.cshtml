@@ -1,0 +1,392 @@
+﻿<!DOCTYPE html>
+@inject IConfiguration _config
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>KTF</title>
+    <link href="~/favicon.ico" rel="shortcut icon" type="image/x-icon" />
+
+    @* Uncomment to use the HtmlEditor control *@
+    @* <script src="https://unpkg.com/devextreme-quill@21_2/dist/dx-quill.min.js"></script> *@
+
+    <link rel="stylesheet" href="~/css/vendor.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/Site.css" />
+    <script src="~/js/vendor.js" asp-append-version="true"></script>
+
+    <script src="~/js/devextreme/localization/dx.messages.en.js"></script>
+    <script src="~/js/devextreme/localization/dx.messages.vi.js"></script>
+    <script src="@Url.Action( "CldrData", "Localization", new { t = CldrDataScriptBuilder.GetCacheParam() })"></script>
+</head>
+
+<body>
+    <div id="app-side-nav-outer-toolbar">
+        <div class="layout-header">
+            @(Html.DevExtreme().Toolbar()
+                .Items(items =>
+                {
+                    items.Add()
+                    .Widget(w => w
+                    .Button()
+                    .Icon("menu")
+                    .OnClick("MES.onMenuButtonClick")
+                    )
+                    .Location(ToolbarItemLocation.Before)
+                    .CssClass("menu-button");
+
+                    items.Add()
+                    .Html($"<div style='text-transform:uppercase;'>{_config["AppSettings:Header"]}</div>")
+                    .Location(ToolbarItemLocation.Center)
+                    .CssClass("header-title");
+
+                    items.Add()
+                    .Widget(w => w
+                    .TextBox()
+                    .Mode(TextBoxMode.Search)
+                    .Visible(false)
+                    )
+                    .LocateInMenu(ToolbarItemLocateInMenuMode.Auto)
+                    .Location(ToolbarItemLocation.After);
+
+                    items.Add()
+                    .Widget(w => w
+                    .Button()
+                    .Icon("globe")
+                    .Visible(false)
+                    )
+                    .LocateInMenu(ToolbarItemLocateInMenuMode.Auto)
+                    .Location(ToolbarItemLocation.After);
+
+                    items.Add()
+                    .Widget(w => w
+                    .Button()
+                    .Icon("clock")
+                    .Visible(false)
+                    )
+                    .LocateInMenu(ToolbarItemLocateInMenuMode.Auto)
+                    .Location(ToolbarItemLocation.After);
+
+                    items.Add()
+                    .Widget(w => w
+                    .SelectBox()
+                    .DataSource(new JS("locales"))
+                    .DisplayExpr("name")
+                    .ValueExpr("value")
+                    .Value(new JS("locale"))
+                    .OnValueChanged("changeLocale")
+                    .Visible(false)
+                    )
+                    .LocateInMenu(ToolbarItemLocateInMenuMode.Auto)
+                    .Location(ToolbarItemLocation.After);
+                })
+                )
+        </div>
+        <div class="layout-body layout-body-hidden">
+            @(Html.DevExtreme().Drawer()
+                .ID("layout-drawer")
+                .Position(DrawerPosition.Left)
+                .Opened(new JS("MES.restoreDrawerOpened()"))
+                .Content(@<text>
+                    <div id="layout-drawer-scrollview" class="with-footer">
+                        <div class="content">
+                            @RenderBody()
+                        </div>
+                        <div class="content-block">
+                            <div class="content-footer">
+                                    @if ((!string.IsNullOrEmpty(_config["AppSettings:Logo"]) && System.IO.File.Exists("wwwroot/" + _config["AppSettings:Logo"])))
+                                    {
+                                        <img src='@(_config["AppSettings:Logo"])' />
+                                    }
+                                    <div id="footer">
+                                        @DateTime.Now.Year &copy; @_config["AppSettings:Footer"]
+                                        <br />
+                                        <i><version>@_config["AppSettings:Version"]</version></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </text>)
+                .Template(new TemplateName("navigation-menu"))
+                )
+        </div>
+    </div>
+
+    @using (Html.DevExtreme().NamedTemplate("navigation-menu"))
+    {
+        <div class="menu-container dx-swatch-additional">
+
+            @functions {
+            string GetUrl(string action) => Url.Action(action);
+            string GetCurrentUrl() => Url.Action(ViewContext.RouteData.Values["action"]?.ToString() ?? "");
+            bool IsCurrentUrl(string pageName) => GetUrl(pageName).ToLower() == GetCurrentUrl().ToLower();
+        }
+
+        @(Html.DevExtreme().TreeView()
+                .ID("TreeView-Menu")
+                .Items(items =>
+                {
+                    items.Add()
+                    .Text("Chương trình chính")
+                    .Icon("home")
+                    .Option("path", GetUrl("Index"))
+                    .Selected(IsCurrentUrl("Index"));
+
+                    items.Add()
+                    .Text("Báo cáo")
+                    .Icon("print")
+                    .Visible(true)
+                    .Expanded(IsCurrentUrl("Scale-Report") || IsCurrentUrl("Stapler-Report"))
+                    .Items(subItems =>
+                    {
+
+                        subItems.Add()
+                    .Text("Máy dập ghim")
+                    .Icon("isblank")
+                    .Option("path", "stapler-report")
+                    .Selected(IsCurrentUrl("Stapler-Report"));
+                        subItems.Add()
+                    .Text("Máy kết nối cân")
+                    .Icon("isblank")
+                    .Option("path", "scale-report")
+                    .Selected(IsCurrentUrl("Scale-Report"));
+                    });
+
+                    items.Add()
+                    .Text("Lịch sử")
+                    .Icon("refresh")
+                    .Visible(true)
+                    .Expanded(IsCurrentUrl("Scale-History") || IsCurrentUrl("Stapler-History"))
+                    .Items(subItems =>
+                    {
+
+                        subItems.Add()
+                    .Text("Máy dập ghim")
+                    .Icon("isblank")
+                    .Option("path", "stapler-history")
+                    .Selected(IsCurrentUrl("Stapler-History"));
+                        subItems.Add()
+                    .Text("Máy kết nối cân")
+                    .Icon("isblank")
+                    .Option("path", "scale-history")
+                    .Selected(IsCurrentUrl("Scale-History"));
+                    });
+
+                    items.Add()
+                    .Text("Monitor IO")
+                    .Icon("floppy")
+                    .Option("path", "monitor")
+                    .Selected(IsCurrentUrl("Monitor"));
+
+                    items.Add()
+                    .Text("Storage - Export")
+                    .Icon("floppy")
+                    .Visible(false)
+                    .Option("path", GetUrl("StorageExport"))
+                    .Selected(IsCurrentUrl("StorageExport"));
+
+                    items.Add()
+                    .Text("Maintenance")
+                    .Icon("toolbox")
+                    .Visible(false)
+                    .Expanded(IsCurrentUrl("Register") || IsCurrentUrl("History"))
+                    .Items(subItems =>
+                    {
+                        subItems.Add()
+                    .Text("Register")
+                    .Icon("isblank")
+                    .Visible(false)
+                    .Option("path", GetUrl("Register"))
+                    .Selected(IsCurrentUrl("Register"));
+
+                        subItems.Add()
+                    .Text("History")
+                    .Icon("isblank")
+                    .Visible(false)
+                    .Option("path", GetUrl("History"))
+                    .Selected(IsCurrentUrl("History"));
+                    });
+
+                    items.Add()
+                    .Text("Setting")
+                    .Icon("preferences")
+                    .Visible(false)
+                    .Option("path", GetUrl("Setting"))
+                    .Selected(IsCurrentUrl("Setting"));
+
+                    items.Add()
+                    .Text("About")
+                    .Icon("info")
+                    .Visible(false)
+                    .Option("path", GetUrl("About"))
+                    .Selected(IsCurrentUrl("About"));
+
+
+                    items.Add()
+                    .Text("Profile")
+                    .Icon("user")
+                    .Visible(false)
+                    .Expanded(IsCurrentUrl("SignUp") || IsCurrentUrl("Login"))
+                    .Items(subItems =>
+                    {
+                        subItems.Add()
+                    .Visible(false)
+                    .Text("SignUp")
+                    .Icon("isblank");
+
+                        subItems.Add()
+                    .Visible(false)
+                    .Text("Login")
+                    .Icon("isblank");
+                    });
+
+                })
+                .ExpandEvent(TreeViewExpandEvent.Click)
+                .SelectionMode(NavSelectionMode.Single)
+                .SelectedExpr("selected")
+                .FocusStateEnabled(false)
+                .Width(250)
+                .OnItemClick("MES.onTreeViewItemClick")
+                )
+        </div>
+    }
+
+    <script>
+        Globalize.locale(navigator.language);
+        let MES = (function () {
+
+            let DRAWER_OPENED_KEY = "MES-drawer-opened";
+
+            let breakpoints = {
+                xSmallMedia: window.matchMedia("(max-width: 599.99px)"),
+                smallMedia: window.matchMedia("(min-width: 600px) and (max-width: 959.99px)"),
+                mediumMedia: window.matchMedia("(min-width: 960px) and (max-width: 1279.99px)"),
+                largeMedia: window.matchMedia("(min-width: 1280px)")
+            };
+
+            function getDrawer() {
+                return $("#layout-drawer").dxDrawer("instance");
+            }
+
+            function restoreDrawerOpened() {
+                let isLarge = breakpoints.largeMedia.matches;
+                if (!isLarge)
+                    return false;
+
+                let state = sessionStorage.getItem(DRAWER_OPENED_KEY);
+                if (state === null)
+                    return isLarge;
+
+                return state === "true";
+            }
+
+            function saveDrawerOpened() {
+                sessionStorage.setItem(DRAWER_OPENED_KEY, getDrawer().option("opened"));
+            }
+
+            function updateDrawer() {
+                let isXSmall = breakpoints.xSmallMedia.matches,
+                    isLarge = breakpoints.largeMedia.matches;
+
+                getDrawer().option({
+                    openedStateMode: isLarge ? "shrink" : "overlap",
+                    revealMode: isXSmall ? "slide" : "expand",
+                    minSize: isXSmall ? 0 : 60,
+                    shading: !isLarge,
+                });
+            }
+
+            function init() {
+                $("#layout-drawer-scrollview").dxScrollView({ direction: "vertical" });
+
+                $.each(breakpoints, function (_, size) {
+                    size.addListener(function (e) {
+                        if (e.matches)
+                            updateDrawer();
+                    });
+                });
+
+                updateDrawer();
+
+                $('.layout-body').removeClass('layout-body-hidden');
+            }
+
+            function navigate(url, delay) {
+                if (url)
+                    setTimeout(function () { location.href = url }, delay);
+            }
+
+            function onMenuButtonClick() {
+                getDrawer().toggle();
+                saveDrawerOpened();
+                $("#TreeView-Menu").dxTreeView("instance").collapseAll();
+            }
+
+            function onTreeViewItemClick(e) {
+                if (e.itemData.text === "Login") {
+                    $("#login-popup").dxPopup("instance").show();
+                    return;
+                } else if (e.itemData.text === "SignUp") {
+                    $("#login-popup").dxPopup("instance").show();
+                    document.getElementById('signUp').click();
+                    return;
+                }
+                let drawer = getDrawer();
+                let savedOpened = restoreDrawerOpened();
+                let actualOpened = drawer.option("opened");
+
+                if (!actualOpened) {
+                    drawer.show();
+                } else {
+                    let willHide = !savedOpened || !breakpoints.largeMedia.matches;
+                    let willNavigate = !e.itemData.selected;
+
+                    if (willHide)
+                        drawer.hide();
+
+                    if (willNavigate)
+                        navigate(e.itemData.path, willHide ? 400 : 0);
+                }
+            }
+
+            return {
+                init: init,
+                restoreDrawerOpened: restoreDrawerOpened,
+                onMenuButtonClick: onMenuButtonClick,
+                onTreeViewItemClick: onTreeViewItemClick
+            };
+        })();
+
+        document.addEventListener("DOMContentLoaded", function documentReady() {
+            this.removeEventListener("DOMContentLoaded", documentReady);
+            MES.init();
+        });
+
+        let formatMessage = Globalize.formatMessage.bind(Globalize);
+        let locales = [
+            { name: "English", value: "en" },
+            { name: "Tiếng Việt", value: "vi" }
+        ];
+        let locale = getLocale();
+        Globalize.locale(locale);
+        function changeLocale(data) {
+            setLocale(data.value);
+            document.location.reload();
+        }
+        function getLocale() {
+            let locale = sessionStorage.getItem("locale");
+            return locale != null ? locale : "en";
+        }
+        function setLocale(locale) {
+            sessionStorage.setItem("locale", locale);
+        }
+    </script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+
+</html>

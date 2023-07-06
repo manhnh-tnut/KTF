@@ -1,0 +1,73 @@
+﻿@page "/Line"
+@using KTF.Shared.Models
+@model KTF.WebManager.Pages.LineModel
+
+<h2>Line</h2>
+
+@(Html.DevExtreme().DataGrid<Line>()
+    .DataSource(d => d.Mvc()
+            .Controller("Line")
+            .LoadAction("Get")
+            .InsertAction("Post")
+            .UpdateAction("Put")
+            .DeleteAction("Delete")
+            .Key("Id"))
+    .RemoteOperations(o=>{
+        o.Filtering(true);
+        o.Grouping(true);
+        o.Paging(true);
+        o.Sorting(true);
+        o.GroupPaging(true);
+    })
+    .Editing(e => e.Mode(GridEditMode.Popup)
+        .AllowUpdating(true)
+        .AllowAdding(true)
+        .AllowDeleting(true)
+        .UseIcons(true)
+        .Popup(p => p
+            .Title($"{nameof(Machine)} Info")
+            .ShowTitle(true)
+        )
+        .Form(f => f.Items(items => {
+            items.AddSimpleFor(m => m.Name);
+            items.AddSimpleFor(m => m.Model);
+            items.AddSimpleFor(m => m.Code);
+            items.AddSimpleFor(m => m.Machine);
+            items.AddSimpleFor(m => m.Unit);
+            items.AddSimpleFor(m => m.Quantity);
+            items.AddSimpleFor(m => m.Minimum);
+            items.AddSimpleFor(m => m.Maximun);
+            items.AddSimpleFor(m => m.Total);
+        }))
+    )
+    .Columns(columns => {
+        columns.AddFor(m => m.Name);
+        columns.AddFor(m => m.Model);
+        columns.AddFor(m => m.Code).Caption("Barcode");
+        columns.AddFor(m => m.Machine)
+                .AllowSearch(true)
+                .Lookup(lookup => lookup
+                    .DataSource(d => d.Mvc().Controller("Machine").LoadAction("Get").Key("Name"))
+                    .ValueExpr("Name")
+                    .DisplayExpr("Name")
+        );
+        columns.AddFor(m => m.Unit).DataType(GridColumnDataType.Number).Caption("Trọng lượng 1 SP (g)");
+        columns.AddFor(m => m.Quantity).DataType(GridColumnDataType.Number).Caption("Tổng số sản phẩm đóng gói (pcs)");
+        columns.AddFor(m => m.Total).DataType(GridColumnDataType.Number).Caption("Tổng trọng lượng 1 thùng đầy (g)");
+        columns.AddFor(m => m.Minimum).DataType(GridColumnDataType.Number).Caption("Tổng trọng lượng tối thiểu (g)");
+        columns.AddFor(m => m.Maximun).DataType(GridColumnDataType.Number).Caption("Tổng trọng lượng tối đa (g)");
+    })
+    .SearchPanel(searchPanel => searchPanel
+        .Visible(true)
+        .Width(240)
+        .Placeholder("Tìm kiếm...")
+        .HighlightSearchText(true))
+    @*.Export(e => e.Enabled(true))*@
+    .ShowBorders(true)
+    @*.OnExporting("exporting")*@
+    .Paging(p => p.PageSize(10))
+    .FilterRow(f => f.Visible(false))
+    .HeaderFilter(f => f.Visible(true))
+    .GroupPanel(p => p.Visible(false))
+    .Grouping(g => g.AutoExpandAll(false))
+)

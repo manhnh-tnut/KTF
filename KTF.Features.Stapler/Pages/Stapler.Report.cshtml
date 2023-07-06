@@ -1,0 +1,94 @@
+﻿@page "/Stapler-Report"
+@using KTF.Shared.Models
+@using DevExtreme.AspNet.Mvc
+@model KTF.Features.Stapler.Pages.StaplerReportModel
+<h2>Báo cáo</h2>
+
+@(Html.DevExtreme().DataGrid<StaplerReport>()
+    .ShowBorders(true)
+    .DataSource(d => d.Mvc()
+            .Controller("StaplerReport")
+            .LoadAction("Get")
+            .InsertAction("Post")
+            .UpdateAction("Put")
+            .DeleteAction("Delete")
+            .Key("Id"))
+    .RemoteOperations(o=>{
+        o.Filtering(true);
+        o.Grouping(true);
+        o.Paging(true);
+        o.Sorting(true);
+        o.GroupPaging(true);
+    })
+    .Editing(e => e.Mode(GridEditMode.Popup)
+        .AllowUpdating(true)
+        .AllowAdding(true)
+        .AllowDeleting(true)
+        .Popup(p => p
+            .Title($"Stapler Report")
+            .ShowTitle(true)
+            .Width(500)
+            .Height(525)
+        )
+        .Form(f => f.Items(items => {
+            items.AddSimpleFor(m => m.Ok).ColSpan(2);
+            items.AddSimpleFor(m => m.Ng).ColSpan(2);
+        }))
+    )
+    .Columns(columns => {
+        columns.Add()
+            .Caption("Ngày/Giờ")
+            .Columns(a =>
+                    {
+                        a.AddFor(m => m.Created)
+                            .Name("Date")
+                            .Caption("Ngày")
+                            .Format(Format.ShortDate)
+                            .SortOrder(SortOrder.Desc);
+
+                        a.AddFor(m => m.Created)
+                            .Name("Time")
+                            .Caption("Giờ bắt đầu")
+                            .Format(Format.ShortTime)
+                            .SortOrder(SortOrder.Asc);
+                    });
+        columns.AddFor(m => m.Line);
+        columns.AddFor(m => m.Model);
+        columns.AddFor(m => m.Code);
+        columns.AddFor(m => m.Total).Caption("Tổng sản lượng");
+        columns.Add()
+            .Caption("Sản lượng(pcs)")
+            .Columns(a =>
+                    {
+                        a.AddFor(m => m.Ok);
+                        a.AddFor(m => m.Ng);
+                    });
+        columns.Add()
+            .Caption("Tỉ lệ đạt(%)")
+            .Columns(a =>
+                    {
+                        a.AddFor(m => m.OkRate).Format("#0.0%").Caption("Tỉ lệ OK");
+                        a.AddFor(m => m.NgRate).Format("#0.0%").Caption("Tỉ lệ NG");
+                    });
+    })
+    .SearchPanel(searchPanel => searchPanel
+        .Visible(true)
+        .Width(240)
+        .Placeholder("Search...")
+        .HighlightSearchText(true)
+    )
+    .AllowColumnResizing(true)
+    .ColumnResizingMode(ColumnResizingMode.NextColumn)
+    .Export(e => e.Enabled(true))
+    .ShowBorders(true)
+    .OnExporting("exporting")
+    .Paging(p => p.PageSize(10))
+    .FilterRow(f => f.Visible(false))
+    .HeaderFilter(f => f.Visible(true))
+    .GroupPanel(p => p.Visible(false))
+    .Grouping(g => g.AutoExpandAll(false))
+)
+
+@section Scripts{
+<script src="~/Statics/js/pages/stapler-report.js" asp-append-version="true"></script>
+}

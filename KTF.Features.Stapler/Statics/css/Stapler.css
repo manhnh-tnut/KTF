@@ -1,0 +1,110 @@
+﻿.col:nth-child(odd) {
+    display: flex;
+    align-items: center;
+}
+
+.col > * {
+    width: 100%;
+}
+
+.header {
+    font-size: 50px;
+    font-weight: 300;
+    letter-spacing: -.5px;
+    padding: 25px;
+    font-family: "Helvetica Neue", "Segoe UI", helvetica, verdana, sans-serif;
+}
+
+.btn-warning,
+.btn-warning:hover,
+.btn-outline-warning:hover,
+warning:not(:disabled):not(.disabled):active,
+.btn-warning:not(:disabled):not(.disabled).active,
+.show > .btn-warning.dropdown-toggle {
+    color: #fff !important
+}
+
+.btn-outline-warning {
+    color: #ffc107
+}
+
+.has-float-label {
+    display: block;
+    position: relative
+}
+
+    .has-float-label label,
+    .has-float-label > span {
+        position: absolute;
+        cursor: text;
+        font-size: 75%;
+        opacity: 1;
+        -webkit-transition: all .2s;
+        transition: all .2s;
+        top: -.5em;
+        left: .75rem;
+        z-index: 3;
+        line-height: 1;
+        padding: 0 1px
+    }
+
+        .has-float-label label::after,
+        .has-float-label > span::after {
+            content: " ";
+            display: block;
+            position: absolute;
+            background: #fff;
+            height: 2px;
+            top: 50%;
+            left: -.2em;
+            right: -.2em;
+            z-index: -1
+        }
+
+    .has-float-label .form-control::-webkit-input-placeholder {
+        opacity: 1;
+        -webkit-transition: all .2s;
+        transition: all .2s
+    }
+
+    .has-float-label .form-control:placeholder-shown:not(:focus)::-webkit-input-placeholder {
+        opacity: 0
+    }
+
+    .has-float-label .form-control:placeholder-shown:not(:focus) + * {
+        font-size: 150%;
+        opacity: .5;
+        top: .3em
+    }
+
+.input-group .has-float-label {
+    display: table-cell
+}
+
+    .input-group .has-float-label .form-control {
+        border-radius: .25rem
+    }
+
+    .input-group .has-float-label:not(:last-child),
+    .input-group .has-float-label:not(:last-child) .form-control {
+        border-bottom-right-radius: 0;
+        border-top-right-radius: 0;
+        border-right: 0
+    }
+
+    .input-group .has-float-label:not(:first-child),
+    .input-group .has-float-label:not(:first-child) .form-control {
+        border-bottom-left-radius: 0;
+        border-top-left-radius: 0
+    }
+
+.container > .h-100 > .header {
+    font-size: 1.5em;
+}
+
+#line,
+.box-body > .row > .col > h4,
+.box-body > .row > .col > button,
+.box-body > .row > .col > span > input {
+    font-size: 1.2em;
+}

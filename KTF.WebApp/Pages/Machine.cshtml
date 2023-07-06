@@ -1,0 +1,54 @@
+﻿@page "/Machine"
+@using KTF.Shared.Models
+@model KTF.WebApp.Pages.MachineModel
+
+<h2>Danh sách Máy</h2>
+
+@(Html.DevExtreme().DataGrid<Machine>()
+    .DataSource(d => d.Mvc()
+            .Controller("Machine")
+            .LoadAction("Get")
+            .InsertAction("Post")
+            .UpdateAction("Put")
+            .DeleteAction("Delete")
+            .Key("Id"))
+    .RemoteOperations(o=>{
+        o.Filtering(true);
+        o.Grouping(true);
+        o.Paging(true);
+        o.Sorting(true);
+        o.GroupPaging(true);
+    })
+    .Editing(e => e.Mode(GridEditMode.Popup)
+        .AllowUpdating(true)
+        .AllowAdding(true)
+        .AllowDeleting(true)
+        .UseIcons(true)
+        .Popup(p => p
+            .Title($"{nameof(Machine)} Info")
+            .ShowTitle(true)
+        )
+        .Form(f => f.Items(items => {
+            items.AddSimpleFor(m => m.Name).ColSpan(2);
+        }))
+    )
+    .Columns(columns => {
+        columns.AddFor(m => m.Name);
+    })
+    .AllowColumnResizing(true)
+    .ColumnResizingMode(ColumnResizingMode.NextColumn)
+    .SearchPanel(searchPanel => searchPanel
+        .Visible(true)
+        .Width(240)
+        .Placeholder("Tìm kiếm...")
+        .HighlightSearchText(true))
+    .Export(e => e.Enabled(false))
+    .ShowBorders(true)
+    @*.OnExporting("exporting")*@
+    .Paging(p => p.PageSize(10))
+    .FilterRow(f => f.Visible(false))
+    .HeaderFilter(f => f.Visible(true))
+    .GroupPanel(p => p.Visible(false))
+    .Grouping(g => g.AutoExpandAll(false))
+)
+

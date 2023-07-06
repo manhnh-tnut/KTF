@@ -1,0 +1,162 @@
+﻿@page "/Scale"
+@using DevExtreme.AspNet.Mvc
+@using KTF.Shared.Models
+@using Microsoft.AspNetCore.Antiforgery
+@model KTF.Features.Scale.Pages.ScaleModel
+@inject IAntiforgery antiforgery
+@{
+    var token = antiforgery.GetAndStoreTokens(HttpContext).RequestToken;
+}
+
+<link rel="stylesheet" href="~/Statics/css/Scale.css" />
+<div id="popup"></div>
+<div class="container">
+    <div class="h-100 d-flex justify-content-left align-items-left"><h3 class="header">Máy kết nối cân</h3></div>
+    <div class="box-body col-12">
+        <div class="row justify-content-center mb-3">
+            <div class="col">
+                <span class="has-float-label">
+                    @(Html.DevExtreme().DropDownBox()
+                        .ID("line")
+                        .ValueExpr("Id")
+                        .DisplayExpr(new JS("gridBox_displayExpr"))
+                        .DataSource(d => d.Mvc()
+                        .Controller("Scale")
+                        .LoadAction("Lines")
+                        .LoadMode(DataSourceLoadMode.Raw)
+                        .Key("Id")
+                    )
+                    .Placeholder("Chọn line...")
+                    .ShowClearButton(true)
+                    .OnValueChanged("gridBox_valueChanged")
+                    .ContentTemplate(new TemplateName("EmbeddedDataGridSingle"))
+                    )
+                    <label for="line">Line</label>
+                </span>
+            </div>
+        </div>
+        <div class="row justify-content-center mb-3">
+            <div class="col">
+                <h4>Cảm biến:</h4>
+            </div>
+            <div class="col">
+                <button id="sensor-on" class="btn btn-outline-success">
+                    Đóng
+                </button>
+            </div>
+            <div class="col">
+                <button id="sensor-off" class="btn btn-danger">
+                    Mở
+                </button>
+            </div>
+        </div>
+        <div class="row justify-content-center mb-3" style="display:none">
+            <div class="col">
+                <h4>Báo hỏng:</h4>
+            </div>
+            <div class="col">
+                <button id="error" class="btn btn-outline-info">
+                    Báo hỏng
+                </button>
+            </div>
+            <div class="col">
+                <button id="handmade" class="btn btn-outline-info">
+                    Dập thủ công
+                </button>
+            </div>
+        </div>
+        <div class="row justify-content-center mb-3">
+            <div class="col">
+                <h4>Code hiện tại:</h4>
+            </div>
+            <div class="col">
+                <span class="has-float-label">
+                    <input type="text" id="current-code" class="form-control" readonly="readonly" required>
+                    <label for="code">Code hiện tại</label>
+                </span>
+            </div>
+            <div class="col">
+                <i><span id="code"></span></i>
+            </div>
+        </div>
+        <div class="row justify-content-center mb-3">
+            <div class="col">
+                <h4>Số lượng:</h4>
+            </div>
+            <div class="col">
+                <span class="has-float-label">
+                    <input type="number" id="current-qty" class="form-control" readonly="readonly">
+                    <label for="current-qty">Số lượng hiện tại(pcs)</label>
+                </span>
+            </div>
+            <div class="col">
+                <i><span id="quantity"></span></i>
+            </div>
+        </div>
+        <div class="row justify-content-center mb-3">
+            <div class="col">
+                <h4>Trọng lượng:</h4>
+            </div>
+            <div class="col">
+                <span class="has-float-label">
+                    <input type="number" id="current-weight" class="form-control" readonly="readonly">
+                    <label for="current-weight">Trọng lượng hiện tại(kg)</label>
+                </span>
+            </div>
+            <div class="col">
+                <i><span id="weight"></span></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+@using (Html.DevExtreme().NamedTemplate("EmbeddedDataGridSingle"))
+{
+    @(Html.DevExtreme().DataGrid<Line>()
+        .ID("embedded-datagrid")
+        .DataSource(new JS(@"component.getDataSource()"))
+        .RemoteOperations(true)
+        .RemoteOperations(o=>{
+            o.Filtering(true);
+            o.Grouping(true);
+            o.Paging(true);
+            o.Sorting(true);
+            o.GroupPaging(true);
+        })
+        .Columns(columns => {
+            columns.AddFor(c=>c.Name);
+            columns.AddFor(c=>c.Model);
+            columns.AddFor(c=>c.Code);
+        })
+        .SearchPanel(searchPanel => searchPanel
+            .Visible(true)
+            .Width(240)
+            .Placeholder("Search...")
+            .HighlightSearchText(true)
+        )
+        .Height(345)
+        .HoverStateEnabled(true)
+        .Paging(p => p.PageSize(10))
+        .FilterRow(f => f.Visible(false))
+        .HeaderFilter(f => f.Visible(false))
+        .Scrolling(s => s.Mode(GridScrollingMode.Virtual))
+        .Selection(s => s.Mode(SelectionMode.Single))
+        .SelectedRowKeys(new JS(@"component.option(""value"") ? [component.option(""value"")] : []"))
+        .OnSelectionChanged(@<text>
+            function(selectedItems) {
+                var keys = selectedItems.selectedRowKeys;
+                component.option("value", keys);
+                component.close();
+            }
+    </text>)
+    )
+}
+
+@section Scripts{
+    <script>
+        var minimum = @Model.Setting.Minimum;
+        var readyTime = @Model.Setting.Sensor;
+    </script>
+    <script src="~/js/signalr/dist/browser/signalr.js"></script>
+    <script src="~/Statics/js/pages/scale.js" asp-append-version="true"></script>
+}

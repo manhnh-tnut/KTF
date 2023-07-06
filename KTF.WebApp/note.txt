@@ -1,0 +1,36 @@
+﻿#sudo nano /etc/systemd/system/ktf.service
+sudo cp /home/pi/app/ktf.service /etc/systemd/system
+
+sudo systemctl enable ktf.service
+sudo systemctl start ktf.service
+sudo systemctl status ktf.service
+sudo journalctl -fu ktf.service
+sudo systemctl daemon-reload
+
+#sudo nano /etc/nginx/sites-available/default
+sudo cp /home/pi/app/default /etc/nginx/sites-available/
+ssh-keygen -R 192.168.1.15
+
+sudo service nginx start
+sudo usermod -a -G tty pi
+
+dotnet publish -r linux-arm
+scp -r bin/Debug/net6.0/linux-arm/publish/* pi@192.168.1.15:/home/pi/app
+
+sudo chown pi /var/www/.dotnet/
+
+sudo nano /boot/config.txt
+enable_uart=1
+
+sudo usermod -a -G dialout $USER
+sudo usermod -a -G tty $USER
+
+sudo systemctl stop serial-getty@ttyS0.service
+sudo systemctl disable serial-getty@ttyS0.service
+
+sudo nano /boot/cmdline.txt
+remove console=serial0,115200
+
+sudo nano /boot/config.txt
+dtoverlay=pi3-miniuart-bt
+sudo reboot
